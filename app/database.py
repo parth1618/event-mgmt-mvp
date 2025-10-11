@@ -1,12 +1,10 @@
 """Database configuration and session management."""
 
-from typing import AsyncGenerator
-from sqlalchemy.ext.asyncio import (
-    AsyncSession,
-    create_async_engine,
-    async_sessionmaker,
-)
+from typing import AsyncGenerator  # noqa: UP035
+
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import declarative_base
+
 from app.config import settings
 
 # Create async engine
@@ -28,16 +26,18 @@ AsyncSessionLocal = async_sessionmaker(
     autoflush=False,
 )
 
+async_session_maker = AsyncSessionLocal
+
 # Declarative base for models
 Base = declarative_base()
 
 
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
     """Dependency for getting async database sessions.
-    
+
     Yields:
         AsyncSession: Database session.
-        
+
     Example:
         @app.get("/items")
         async def get_items(db: AsyncSession = Depends(get_db)):
@@ -53,7 +53,7 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
 
 async def init_db() -> None:
     """Initialize database tables.
-    
+
     Creates all tables defined in models if they don't exist.
     Should be called on application startup.
     """
@@ -63,7 +63,7 @@ async def init_db() -> None:
 
 async def close_db() -> None:
     """Close database connections.
-    
+
     Should be called on application shutdown.
     """
     await engine.dispose()

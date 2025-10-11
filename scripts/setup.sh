@@ -24,11 +24,11 @@ sleep 10
 
 # Run migrations
 echo "🗄️  Running database migrations..."
-docker-compose exec api poetry run alembic upgrade head
+docker-compose exec api uv run alembic upgrade head
 
 # Create initial admin user
 echo "👤 Creating admin user..."
-docker-compose exec api poetry run python -c "
+docker-compose exec api uv run python -c "
 from app.database import async_session_maker
 from app.models.user import User
 from app.core.security import get_password_hash

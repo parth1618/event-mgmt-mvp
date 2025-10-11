@@ -1,2 +1,2 @@
-"""Event Mgmt MVP Backend Application."""
+"""Event Management MVP."""
 __version__ = "1.0.0"

@@ -1,15 +1,15 @@
 """Event management endpoints."""
 
-from typing import List
-from fastapi import APIRouter, Depends, File, UploadFile, Query, status
-from sqlalchemy.ext.asyncio import AsyncSession
 from uuid import UUID
 
+from fastapi import APIRouter, Depends, File, Query, UploadFile, status
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.database import get_db
-from app.schemas.event import EventCreate, EventUpdate, EventOut, EventList
-from app.schemas.common import PaginatedResponse
-from app.dependencies import get_current_user, get_current_organizer
+from app.dependencies import get_current_organizer
 from app.models.user import User
+from app.schemas.common import PaginatedResponse
+from app.schemas.event import EventCreate, EventList, EventOut, EventUpdate
 from app.services.event_service import EventService
 
 router = APIRouter()
@@ -22,15 +22,15 @@ async def create_event(
     db: AsyncSession = Depends(get_db),
 ) -> EventOut:
     """Create a new event (organizer only).
-    
+
     Args:
         event_data: Event creation data.
         current_user: Current authenticated organizer.
         db: Database session.
-        
+
     Returns:
         EventOut: Created event data.
-        
+
     Example:
         curl -X POST "http://localhost:8000/api/v1/events" \\
              -H "Authorization: Bearer <token>" \\
@@ -55,7 +55,7 @@ async def list_events(
     db: AsyncSession = Depends(get_db),
 ) -> PaginatedResponse[EventList]:
     """List and search events with filters and pagination.
-    
+
     Args:
         q: Search query (title, description).
         category_id: Filter by category.
@@ -66,7 +66,7 @@ async def list_events(
         page: Page number.
         size: Items per page.
         db: Database session.
-        
+
     Returns:
         PaginatedResponse: Paginated list of events.
     """
@@ -90,14 +90,14 @@ async def get_event(
     db: AsyncSession = Depends(get_db),
 ) -> EventOut:
     """Get event details by ID.
-    
+
     Args:
         event_id: Event UUID.
         db: Database session.
-        
+
     Returns:
         EventOut: Event data.
-        
+
     Raises:
         HTTPException: If event not found.
     """
@@ -114,16 +114,16 @@ async def update_event(
     db: AsyncSession = Depends(get_db),
 ) -> EventOut:
     """Update event (organizer only, own events).
-    
+
     Args:
         event_id: Event UUID.
         event_update: Updated event data.
         current_user: Current authenticated organizer.
         db: Database session.
-        
+
     Returns:
         EventOut: Updated event data.
-        
+
     Raises:
         HTTPException: If event not found or unauthorized.
     """
@@ -139,12 +139,12 @@ async def delete_event(
     db: AsyncSession = Depends(get_db),
 ) -> None:
     """Delete event (organizer only, own events).
-    
+
     Args:
         event_id: Event UUID.
         current_user: Current authenticated organizer.
         db: Database session.
-        
+
     Raises:
         HTTPException: If event not found or unauthorized.
     """
@@ -159,12 +159,12 @@ async def publish_event(
     db: AsyncSession = Depends(get_db),
 ) -> EventOut:
     """Publish event (make it visible to attendees).
-    
+
     Args:
         event_id: Event UUID.
         current_user: Current authenticated organizer.
         db: Database session.
-        
+
     Returns:
         EventOut: Updated event data.
     """
@@ -181,13 +181,13 @@ async def upload_banner(
     db: AsyncSession = Depends(get_db),
 ) -> EventOut:
     """Upload event banner image.
-    
+
     Args:
         event_id: Event UUID.
         file: Banner image file (JPEG, PNG, max 5MB).
         current_user: Current authenticated organizer.
         db: Database session.
-        
+
     Returns:
         EventOut: Updated event data with banner URL.
     """

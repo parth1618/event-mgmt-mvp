@@ -99,8 +99,8 @@ cp .env.example .env
 
 ### Step 2: Install Dependencies (2 min)
 ```bash
-curl -sSL https://install.python-poetry.org | python3 -
-poetry install
+curl -sSL https://install.python-uv.org | python3 -
+uv install
 ```
 
 ### Step 3: Start Everything (2 min)
@@ -114,7 +114,7 @@ bash scripts/setup.sh
 # Option C: Manual
 docker-compose up -d
 sleep 10
-docker-compose exec api poetry run alembic upgrade head
+docker-compose exec api uv run alembic upgrade head
 ```
 
 ### Step 4: Verify Installation
@@ -278,10 +278,10 @@ make db-shell
 make test-cov
 
 # Run specific test file
-poetry run pytest tests/test_orders.py -v
+uv run pytest tests/test_orders.py -v
 
 # Run tests matching pattern
-poetry run pytest -k "test_create_order"
+uv run pytest -k "test_create_order"
 ```
 
 ## 🎨 Code Quality Standards

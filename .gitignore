@@ -63,6 +63,9 @@ Thumbs.db
 .mypy_cache/
 .dmypy.json
 
+# ruff
+.ruff_cache/
+
 # Alembic
 alembic/versions/*.pyc
 

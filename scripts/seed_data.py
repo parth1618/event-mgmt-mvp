@@ -3,15 +3,15 @@
 import asyncio
 from datetime import datetime, timedelta
 from decimal import Decimal
-from uuid import uuid4
 
+from loguru import logger
+
+from app.core.security import get_password_hash
 from app.database import async_session_maker
-from app.models.user import User
 from app.models.category import Category
 from app.models.event import Event
 from app.models.ticket import Ticket
-from app.core.security import get_password_hash
-from loguru import logger
+from app.models.user import User
 
 
 async def seed_categories():
@@ -24,7 +24,7 @@ async def seed_categories():
         {"name": "Sports", "slug": "sports", "icon": "⚽"},
         {"name": "Arts", "slug": "arts", "icon": "🎨"},
     ]
-    
+
     async with async_session_maker() as session:
         for cat_data in categories:
             category = Category(**cat_data)
@@ -49,7 +49,7 @@ async def seed_users():
             "role": "attendee",
         },
     ]
-    
+
     async with async_session_maker() as session:
         for user_data in users:
             password = user_data.pop("password")
@@ -57,7 +57,7 @@ async def seed_users():
                 **user_data,
                 hashed_password=get_password_hash(password),
                 is_active=True,
-                is_verified=True
+                is_verified=True,
             )
             session.add(user)
         await session.commit()
@@ -69,19 +69,21 @@ async def seed_events():
     async with async_session_maker() as session:
         # Get organizer and category
         from sqlalchemy import select
-        
-        organizer = (await session.execute(
-            select(User).where(User.email == "organizer@test.com")
-        )).scalar_one()
-        
-        tech_category = (await session.execute(
-            select(Category).where(Category.slug == "technology")
-        )).scalar_one()
-        
-        music_category = (await session.execute(
-            select(Category).where(Category.slug == "music")
-        )).scalar_one()
-        
+
+        organizer = (
+            await session.execute(
+                select(User).where(User.email == "organizer@test.com")
+            )
+        ).scalar_one()
+
+        tech_category = (
+            await session.execute(select(Category).where(Category.slug == "technology"))
+        ).scalar_one()
+
+        music_category = (
+            await session.execute(select(Category).where(Category.slug == "music"))
+        ).scalar_one()
+
         # Create events
         events_data = [
             {
@@ -96,7 +98,7 @@ async def seed_events():
                     {"name": "Early Bird", "price": Decimal("199.00"), "quantity": 100},
                     {"name": "Regular", "price": Decimal("299.00"), "quantity": 300},
                     {"name": "VIP", "price": Decimal("499.00"), "quantity": 100},
-                ]
+                ],
             },
             {
                 "title": "Summer Music Festival",
@@ -107,25 +109,29 @@ async def seed_events():
                 "end_datetime": datetime.utcnow() + timedelta(days=63),
                 "total_capacity": 5000,
                 "tickets": [
-                    {"name": "General Admission", "price": Decimal("99.00"), "quantity": 4000},
+                    {
+                        "name": "General Admission",
+                        "price": Decimal("99.00"),
+                        "quantity": 4000,
+                    },
                     {"name": "VIP Pass", "price": Decimal("299.00"), "quantity": 1000},
-                ]
+                ],
             },
         ]
-        
+
         for event_data in events_data:
             tickets_data = event_data.pop("tickets")
-            
+
             event = Event(
                 **event_data,
                 organizer_id=organizer.id,
                 available_capacity=event_data["total_capacity"],
                 status="published",
-                published_at=datetime.utcnow()
+                published_at=datetime.utcnow(),
             )
             session.add(event)
             await session.flush()
-            
+
             # Create tickets
             for ticket_data in tickets_data:
                 ticket = Ticket(
@@ -134,10 +140,10 @@ async def seed_events():
                     quantity_available=ticket_data["quantity"],
                     quantity_total=ticket_data["quantity"],
                     min_per_order=1,
-                    max_per_order=10
+                    max_per_order=10,
                 )
                 session.add(ticket)
-        
+
         await session.commit()
         logger.info(f"Seeded {len(events_data)} events with tickets")
 
@@ -145,11 +151,11 @@ async def seed_events():
 async def main():
     """Run all seed functions."""
     logger.info("Starting database seeding...")
-    
+
     await seed_categories()
     await seed_users()
     await seed_events()
-    
+
     logger.info("✅ Database seeding completed!")
     logger.info("\nTest credentials:")
     logger.info("  Organizer: organizer@test.com / OrganizerPass123!")

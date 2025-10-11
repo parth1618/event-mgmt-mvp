@@ -23,7 +23,7 @@ docker-compose -f docker-compose.prod.yml up -d
 
 # Run migrations
 echo "🗄️  Running migrations..."
-docker-compose -f docker-compose.prod.yml exec -T api poetry run alembic upgrade head
+docker-compose -f docker-compose.prod.yml exec -T api uv run alembic upgrade head
 
 # Health check
 echo "🏥 Health check..."

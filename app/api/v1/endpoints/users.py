@@ -4,9 +4,9 @@ from fastapi import APIRouter, Depends, File, UploadFile, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
-from app.schemas.user import UserOut, UserUpdate
 from app.dependencies import get_current_user
 from app.models.user import User
+from app.schemas.user import UserOut, UserUpdate
 from app.services.user_service import UserService
 
 router = APIRouter()
@@ -17,10 +17,10 @@ async def get_profile(
     current_user: User = Depends(get_current_user),
 ) -> UserOut:
     """Get current user profile.
-    
+
     Args:
         current_user: Current authenticated user.
-        
+
     Returns:
         UserOut: User profile data.
     """
@@ -34,12 +34,12 @@ async def update_profile(
     db: AsyncSession = Depends(get_db),
 ) -> UserOut:
     """Update current user profile.
-    
+
     Args:
         user_update: Updated user data.
         current_user: Current authenticated user.
         db: Database session.
-        
+
     Returns:
         UserOut: Updated user data.
     """
@@ -54,7 +54,7 @@ async def delete_account(
     db: AsyncSession = Depends(get_db),
 ) -> None:
     """Delete current user account.
-    
+
     Args:
         current_user: Current authenticated user.
         db: Database session.
@@ -70,15 +70,15 @@ async def upload_avatar(
     db: AsyncSession = Depends(get_db),
 ) -> UserOut:
     """Upload user avatar image.
-    
+
     Args:
         file: Avatar image file (JPEG, PNG, max 5MB).
         current_user: Current authenticated user.
         db: Database session.
-        
+
     Returns:
         UserOut: Updated user data with avatar URL.
-        
+
     Raises:
         HTTPException: If file is invalid.
     """

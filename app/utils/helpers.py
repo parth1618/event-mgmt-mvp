@@ -1,129 +1,138 @@
 """Helper utility functions."""
 
-import uuid
 import random
 import string
-import re
 from datetime import datetime
-from typing import Optional
-import qrcode
-from io import BytesIO
-
-
-def generate_uuid() -> uuid.UUID:
-    """Generate a new UUID4.
-    
-    Returns:
-        uuid.UUID: New UUID.
-    """
-    return uuid.uuid4()
+from uuid import UUID
 
 
 def generate_order_number() -> str:
-    """Generate a unique order number.
-    
+    """Generate unique order number.
+
     Returns:
-        str: Order number in format EVT-YYYYMMDD-XXXXX.
-        
-    Example:
-        >>> generate_order_number()
-        'EVT-20241215-A3K9Z'
+        str: Order number in format ORD-YYYYMMDD-XXXXX
     """
-    date_str = datetime.utcnow().strftime("%Y%m%d")
-    random_str = ''.join(random.choices(string.ascii_uppercase + string.digits, k=5))
-    return f"EVT-{date_str}-{random_str}"
+    date_part = datetime.utcnow().strftime("%Y%m%d")
+    random_part = "".join(random.choices(string.digits, k=5))
+    return f"ORD-{date_part}-{random_part}"
 
 
-def slugify(text: str) -> str:
-    """Convert text to URL-friendly slug.
-    
+def generate_ticket_code(order_id: UUID, item_index: int) -> str:
+    """Generate unique ticket code.
+
     Args:
-        text: Text to convert.
-        
-    Returns:
-        str: Slugified text.
-        
-    Example:
-        >>> slugify("My Awesome Event 2024!")
-        'my-awesome-event-2024'
-    """
-    text = text.lower()
-    text = re.sub(r'[^\w\s-]', '', text)
-    text = re.sub(r'[-\s]+', '-', text)
-    return text.strip('-')
+        order_id: Order UUID.
+        item_index: Index of ticket in order.
 
-
-def generate_qr_code(data: str) -> BytesIO:
-    """Generate QR code image.
-    
-    Args:
-        data: Data to encode in QR code.
-        
     Returns:
-        BytesIO: QR code image as bytes.
-        
-    Example:
-        >>> qr_bytes = generate_qr_code("https://event.com/ticket/123")
-        >>> # Upload qr_bytes to storage
+        str: Ticket code.
     """
-    qr = qrcode.QRCode(
-        version=1,
-        error_correction=qrcode.constants.ERROR_CORRECT_L,
-        box_size=10,
-        border=4,
-    )
-    qr.add_data(data)
-    qr.make(fit=True)
-    
-    img = qr.make_image(fill_color="black", back_color="white")
-    buffer = BytesIO()
-    img.save(buffer, format="PNG")
-    buffer.seek(0)
-    return buffer
+    order_short = str(order_id)[:8].upper()
+    return f"TKT-{order_short}-{item_index:03d}"
 
 
 def format_currency(amount: float, currency: str = "USD") -> str:
     """Format amount as currency string.
-    
+
     Args:
         amount: Amount to format.
         currency: Currency code.
-        
+
     Returns:
         str: Formatted currency string.
-        
-    Example:
-        >>> format_currency(1234.56)
-        '$1,234.56'
     """
-    if currency.upper() == "USD":
+    if currency == "USD":
         return f"${amount:,.2f}"
     return f"{amount:,.2f} {currency}"
 
 
-def calculate_pagination(
-    total: int,
-    page: int,
-    size: int
-) -> dict:
+def slugify(text: str) -> str:
+    """Convert text to URL-safe slug.
+
+    Args:
+        text: Text to slugify.
+
+    Returns:
+        str: Slugified text.
+    """
+    import re
+
+    text = text.lower()
+    text = re.sub(r"[^\w\s-]", "", text)
+    text = re.sub(r"[\s_-]+", "-", text)
+    text = re.sub(r"^-+|-+$", "", text)
+    return text
+
+
+def mask_email(email: str) -> str:
+    """Mask email address for privacy.
+
+    Args:
+        email: Email address to mask.
+
+    Returns:
+        str: Masked email (e.g., j***@example.com)
+    """
+    if "@" not in email:
+        return email
+
+    local, domain = email.split("@")
+    if len(local) <= 2:
+        masked_local = local[0] + "*"
+    else:
+        masked_local = local[0] + "*" * (len(local) - 2) + local[-1]
+
+    return f"{masked_local}@{domain}"
+
+
+def mask_phone(phone: str) -> str:
+    """Mask phone number for privacy.
+
+    Args:
+        phone: Phone number to mask.
+
+    Returns:
+        str: Masked phone (e.g., +1***-***-1234)
+    """
+    if not phone or len(phone) < 4:
+        return phone
+
+    return phone[:2] + "*" * (len(phone) - 6) + phone[-4:]
+
+
+def calculate_pagination(total: int, page: int, page_size: int) -> dict:
     """Calculate pagination metadata.
-    
+
     Args:
         total: Total number of items.
         page: Current page number (1-indexed).
-        size: Items per page.
-        
+        page_size: Items per page.
+
     Returns:
         dict: Pagination metadata.
-        
-    Example:
-        >>> calculate_pagination(total=100, page=2, size=20)
-        {'total': 100, 'page': 2, 'size': 20, 'pages': 5}
     """
-    pages = (total + size - 1) // size  # Ceiling division
+    total_pages = (total + page_size - 1) // page_size
+    has_next = page < total_pages
+    has_prev = page > 1
+
     return {
         "total": total,
         "page": page,
-        "size": size,
-        "pages": pages
+        "page_size": page_size,
+        "total_pages": total_pages,
+        "has_next": has_next,
+        "has_prev": has_prev,
     }
+
+
+def validate_date_range(start: datetime, end: datetime) -> bool:
+    """Validate that end date is after start date.
+
+    Args:
+        start: Start datetime.
+        end: End datetime.
+
+    Returns:
+        bool: True if valid, False otherwise.
+    """
+    return end > start

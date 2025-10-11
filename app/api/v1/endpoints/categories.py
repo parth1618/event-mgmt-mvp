@@ -1,30 +1,30 @@
 """Category management endpoints."""
 
-from typing import List
-from fastapi import APIRouter, Depends, status
-from sqlalchemy.ext.asyncio import AsyncSession
 from uuid import UUID
 
+from fastapi import APIRouter, Depends, status
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.database import get_db
-from app.schemas.category import CategoryCreate, CategoryUpdate, CategoryOut
 from app.dependencies import get_current_admin
 from app.models.user import User
+from app.schemas.category import CategoryCreate, CategoryOut, CategoryUpdate
 from app.services.category_service import CategoryService
 
 router = APIRouter()
 
 
-@router.get("", response_model=List[CategoryOut])
+@router.get("", response_model=list[CategoryOut])
 async def list_categories(
     db: AsyncSession = Depends(get_db),
-) -> List[CategoryOut]:
+) -> list[CategoryOut]:
     """List all categories.
-    
+
     Args:
         db: Database session.
-        
+
     Returns:
-        List[CategoryOut]: List of categories.
+        list[CategoryOut]: List of categories.
     """
     category_service = CategoryService(db)
     categories = await category_service.list_categories()
@@ -38,12 +38,12 @@ async def create_category(
     db: AsyncSession = Depends(get_db),
 ) -> CategoryOut:
     """Create a new category (admin only).
-    
+
     Args:
         category_data: Category creation data.
         current_user: Current authenticated admin.
         db: Database session.
-        
+
     Returns:
         CategoryOut: Created category data.
     """
@@ -60,13 +60,13 @@ async def update_category(
     db: AsyncSession = Depends(get_db),
 ) -> CategoryOut:
     """Update category (admin only).
-    
+
     Args:
         category_id: Category UUID.
         category_update: Updated category data.
         current_user: Current authenticated admin.
         db: Database session.
-        
+
     Returns:
         CategoryOut: Updated category data.
     """

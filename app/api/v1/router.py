@@ -1,15 +1,8 @@
 """Main API v1 router that includes all endpoint routers."""
 
 from fastapi import APIRouter
-from app.api.v1.endpoints import (
-    auth,
-    users,
-    events,
-    tickets,
-    orders,
-    payments,
-    categories,
-)
+
+from app.api.v1.endpoints import auth, categories, events, orders, payments, tickets, users
 
 api_router = APIRouter()
 

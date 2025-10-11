@@ -1,14 +1,21 @@
 """Authentication endpoints."""
 
-from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import APIRouter, Depends, status
 from loguru import logger
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
-from app.schemas.user import UserCreate, UserOut, Token, PasswordResetRequest, PasswordReset, TokenRefresh
-from app.services.auth_service import AuthService
 from app.dependencies import get_current_user
 from app.models.user import User
+from app.schemas.user import (
+    PasswordReset,
+    PasswordResetRequest,
+    Token,
+    TokenRefresh,
+    UserCreate,
+    UserOut,
+)
+from app.services.auth_service import AuthService
 
 router = APIRouter()
 
@@ -19,17 +26,17 @@ async def register(
     db: AsyncSession = Depends(get_db),
 ) -> UserOut:
     """Register a new user.
-    
+
     Args:
         user_data: User registration data.
         db: Database session.
-        
+
     Returns:
         UserOut: Created user data.
-        
+
     Raises:
         HTTPException: If email already exists.
-        
+
     Example:
         curl -X POST "http://localhost:8000/api/v1/auth/register" \\
              -H "Content-Type: application/json" \\
@@ -48,18 +55,18 @@ async def login(
     db: AsyncSession = Depends(get_db),
 ) -> Token:
     """Login and get access token.
-    
+
     Args:
         email: User email.
         password: User password.
         db: Database session.
-        
+
     Returns:
         Token: Access and refresh tokens.
-        
+
     Raises:
         HTTPException: If credentials are invalid.
-        
+
     Example:
         curl -X POST "http://localhost:8000/api/v1/auth/login" \\
              -H "Content-Type: application/x-www-form-urlencoded" \\
@@ -77,14 +84,14 @@ async def refresh_token(
     db: AsyncSession = Depends(get_db),
 ) -> Token:
     """Refresh access token using refresh token.
-    
+
     Args:
         refresh_data: Refresh token data.
         db: Database session.
-        
+
     Returns:
         Token: New access and refresh tokens.
-        
+
     Raises:
         HTTPException: If refresh token is invalid.
     """
@@ -99,14 +106,14 @@ async def forgot_password(
     db: AsyncSession = Depends(get_db),
 ) -> dict:
     """Request password reset (stubbed - logs instead of sending email).
-    
+
     Args:
         request: Password reset request with email.
         db: Database session.
-        
+
     Returns:
         dict: Success message.
-        
+
     Example:
         curl -X POST "http://localhost:8000/api/v1/auth/forgot-password" \\
              -H "Content-Type: application/json" \\
@@ -124,14 +131,14 @@ async def reset_password(
     db: AsyncSession = Depends(get_db),
 ) -> dict:
     """Reset password using token.
-    
+
     Args:
         reset_data: Reset token and new password.
         db: Database session.
-        
+
     Returns:
         dict: Success message.
-        
+
     Raises:
         HTTPException: If token is invalid or expired.
     """
@@ -145,13 +152,13 @@ async def get_current_user_info(
     current_user: User = Depends(get_current_user),
 ) -> UserOut:
     """Get current authenticated user information.
-    
+
     Args:
         current_user: Current authenticated user.
-        
+
     Returns:
         UserOut: User data.
-        
+
     Example:
         curl -X GET "http://localhost:8000/api/v1/auth/me" \\
              -H "Authorization: Bearer <token>"
